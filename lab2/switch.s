@@ -11,7 +11,7 @@ get_switch:
 Reads the switch status
 -------------------------------------------------------
 Returns:
-r0 - the number that the switches are displaying in binary 
+r0 - the number that the switches are displaying in binary.
 -------------------------------------------------------
 */
 	ldr r1, =SWITCH
