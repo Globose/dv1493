@@ -108,47 +108,43 @@ Uses: No registers altered by the function
 /*******************************************************************
   Function for recursive factorial caclulation
 
-Parameter: a number (r0)
-Returns: factorial for that nummber (r0)
+Parameter: a number
+Returns: factorial for that nummber
 *******************************************************************/
 // Write your function code here
-
 factorial:
-	cmp r0, #1
-	ble base
+	PUSH {lr}
 
-	push {r0,lr}
-	sub r0, r0, #1
-	bl factorial
-	mov r1, r0
-	pop {r0,lr}
-	mul r0,r0,r1
-	bx lr
+	// Base case
+	CMP r0, #1
+	MOVLE r0, #1
+	BLE factorial_end
 
-  base:
-    mov r0, #1
-    bx lr
-
+	// Recursive
+	PUSH {r0}
+	SUB r0, #1
+	BL factorial
+	POP {r1}
+	MUL r0, r1
+factorial_end:
+	POP {pc}
 
 /*******************************************************************
  Main program
 *******************************************************************/
 // Write code for your main program here
-
 _start:
-	ldr	sp, =STACK_BASE
-	mov r5, #1
+	MOV r4, #1
 	loop:
-		mov r0, r5
-		bl factorial
-		bl print_number
-		add r5, r5, #1
-		
-		cmp r5,#11
-		blt loop
-
+		CMP r4, #10
+		BGT _end
+		MOV r0, r4
+		BL factorial
+		BL print_number
+		ADD r4, #1
+		B loop
+	
 _end:
-  B _end
+    B _end
 
 .end
-
