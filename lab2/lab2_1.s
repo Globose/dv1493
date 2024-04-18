@@ -88,7 +88,7 @@ set_display:
 Sets a value for the display number at the end
 -------------------------------------------------------
 Arguments:
-r4 - the number that will be displayed (hex)
+r0 - the number that will be displayed (hex)
 -------------------------------------------------------
 */
 	ldr r0, =numbers
