@@ -39,15 +39,17 @@ _start:
     MSR CPSR, #0b11010011 // change to supervisor mode, interrupts disabled
     LDR SP, =SVC_MODE_STACK_BASE // initiate supervisor mode stack
 	
+	// Initialize the Push buttons with receive interrupts enabled
+    LDR R0, =BTN_BASE
+    MOV R1, #0b0011
+    STR R1, [R0,#8]
+	MOV R1, #0b0011
+    STR R1, [R0,#0xC]
+
 	/* 2. Configure the Generic Interrupt Controller (GIC). Use the given help function CONFIG_GIC! */
     // R0: The Interrupt ID to enable (only one supported for now)
-    MOV R0, #80  // UART Interrupt ID = 80
+    MOV R0, #73  // PUSH BUTTON ID = 73
     BL CONFIG_GIC // configure the ARM GIC
-
-	// Initialize the UART with receive interrupts enabled
-    LDR R0, =UART_CONTROL_REGISTER
-    MOV R1, #0x1 // enable REceive interrupts
-    STR R1, [R0]
 
 	/* 4. Change to the processor mode for the main program loop (for example supervisor mode) */
     /* 5. Enable the processor interrupts (IRQ in our case) */
@@ -138,8 +140,8 @@ SERVICE_IRQ:
     LDR R5, [R4, #0x0C] // read current Interrupt ID from ICCIAR
 
     /* 2. Check which device raised the interrupt */
-CHECK_UART_INTERRUPT:
-    CMP R5, #80  // UART Interrupt ID
+CHECK_BTN_INTERRUPT:
+    CMP R5, #73  // BTNs Interrupt ID
     BNE SERVICE_IRQ_DONE // if not recognized, some error handling or just return from interrupt
 
     /*
@@ -147,7 +149,7 @@ CHECK_UART_INTERRUPT:
         and
         4. Acknowledge the specific device interrupt
     */
-    BL UART_INTERRUPT_HANDLER
+    BL BTN_INTERRUPT_HANDLER
 
 SERVICE_IRQ_DONE:
     /* 5. Inform the GIC that the interrupt is handled */
@@ -156,15 +158,13 @@ SERVICE_IRQ_DONE:
     POP {R0-R7, LR}
     SUBS PC, LR, #4
 
-UART_INTERRUPT_HANDLER:
+BTN_INTERRUPT_HANDLER:
     PUSH {LR}
-    LDR R0, =UART_DATA_REGISTER
+    LDR R0, =BTN_BASE
 
-    LDR R1, [R0]  // read from uart, also clears the interrupt
-    AND R1, R1, #0xFF // mask out the character
-
-    // Do something with the character...
-    STR R1, [R0] // echo the character back to the terminal
+    LDR R1, [R0]  // read from push btns
+	mov r1, #0b1111
+    STR r1, [R0,#0xC]
     POP {PC}
 
    /* Undefined instructions */
