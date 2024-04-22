@@ -46,9 +46,9 @@ display_counter:
 	
 .global _start
 _start:
-	bl reset_display
-	mov r3, #0
-   /* 1. Set up stack pointers for IRQ and SVC processor modes */
+	BL reset_display
+
+    /* 1. Set up stack pointers for IRQ and SVC processor modes */
     MSR CPSR_c, #0b11010010 // change to IRQ mode with interrupts disabled
     LDR SP, =IRQ_MODE_STACK_BASE // initiate IRQ mode stack
 
@@ -71,8 +71,8 @@ _start:
     /* 5. Enable the processor interrupts (IRQ in our case) */
     MSR CPSR_c, #0b01010011  // IRQ unmasked, MODE = SVC
 
-	bl counter
-	b _end
+	BL counter
+	B _end
 	
 /*******************************************************************
     HELP FUNCTION!
@@ -178,18 +178,18 @@ SERVICE_IRQ_DONE:
 BTN_INTERRUPT_HANDLER:
     LDR R0, =BTN_BASE
 	
-    LDR R1, [R0,#12]  // read from push btns
+    LDR R1, [R0,#12]  // Read from push btns
 	MOV r2, #0b1111
-	STR r2, [R0,#0xC]
+	STR r2, [R0,#0xC] // Reset push btns
 	
-	mov r2, #0b0011 // mask
-	and r1, r1, r2
+	MOV r2, #0b0011 // Mask
+	AND r1, r1, r2
 	
 	MOV r0, #0
 	CMP r1, #1
-	MOVEQ r0, #1
+	MOVEQ r0, #1 // INcrease
 	CMP r1, #2
-	MOVEQ r0, #-1
+	MOVEQ r0, #-1  // Decrease
 	B counter_change
 	
    /* Undefined instructions */
@@ -214,17 +214,16 @@ counter:
 Polls jtag uart, and increments/reduces the display number
 -------------------------------------------------------
 */
-	push {lr}
-	mov r3, #0
+	PUSH {lr}
+	MOV r3, #0
 	counter_loop:
-		bl read_jtag
+		BL read_jtag
 		MOV r1, r0
 		MOV r0, #0
-		ldr lr, =counter_loop
-		cmp r1, #112
-		MOVEQ r0, #1
-		cmp r1, #111
-		MOVEQ r0, #-1
+		CMP r1, #112
+		MOVEQ r0, #1    // Increase display number
+		CMP r1, #111
+		MOVEQ r0, #-1    // Decrease display number
 		
 		CMP r0, #0
 		BEQ counter_loop
@@ -232,8 +231,8 @@ Polls jtag uart, and increments/reduces the display number
 		B counter_loop
 		
 	counter_return:
-		pop {lr}
-		bx lr
+		POP {lr}
+		BX lr
 
 /*
 -------------------------------------------------------
@@ -244,29 +243,32 @@ r0 - the string that has been read
 -------------------------------------------------------
 */
 read_jtag:
-	ldr r1, =UART_DATA
-	ldr r0, [r1]
-	ands r2, r0, #0x8000
-	cmp r2, #0
-	beq read_jtag_return
-	and r0, r0, #0x00ff
-	bx lr
+	LDR r1, =UART_DATA
+	LDR r0, [r1]
+	ANDS r2, r0, #0x8000  // Mask
+	CMP r2, #0
+	BEQ read_jtag_return  // If nothing new
+	AND r0, r0, #0x00ff
+	BX lr
 
 	read_jtag_return:
-		mov r0, #0
-		bx lr
+		MOV r0, #0
+		BX lr
 		
 /*
 Adds r0 to counter
 */
 counter_change:
-	ldr r1, =display_counter
-	ldr r2, [r1]
-	add r2, r0
+	LDR r1, =display_counter
+	LDR r2, [r1]
+	ADD r2, r0
+
+    // Limits check
 	CMP r2, #16
 	MOVEQ r2, #0
 	CMP r2, #-1
 	MOVEQ r2, #15
+
 	MOV r0, r2
 	B set_display
 
@@ -279,18 +281,18 @@ Arguments:
 r0 - the number that will be displayed in hex
 -------------------------------------------------------
 */
-	ldr r1, =display_counter
+	LDR r1, =display_counter
 	STR r0, [r1]
 	
-	ldr r1, =numbers
-	mov r2, #4
-	mul r2, r2, r0
-	add r1, r2
-	ldr r1, [r1]
+	LDR r1, =numbers
+	MOV r2, #4
+	MUL r2, r2, r0 // Get array index
+	ADD r1, r2
+	LDR r1, [r1]  // Load display digit code
 
-	ldr r2, =DISPLAY_1
-	str r1, [r2]
-	bx lr
+	LDR r2, =DISPLAY_1
+	STR r1, [r2]
+	BX lr
 	
 reset_display:
 /*
@@ -298,13 +300,12 @@ reset_display:
 Resets the display
 -------------------------------------------------------
 */	
-	mov r1, #0b00000000
-	ldr r0, =DISPLAY_1
-	str r1, [r0]
-	ldr r0, =DISPLAY_2
-	str r1, [r0]
-	bx lr
-
+	MOV r1, #0b00000000
+	LDR r0, =DISPLAY_1
+	STR r1, [r0]
+	LDR r0, =DISPLAY_2
+	STR r1, [r0]
+	BX lr
 
 _end:
   B _end
