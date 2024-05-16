@@ -50,16 +50,19 @@ int main(){
     // och lägger de lästa tecknen i utbufferten.
     // Lägger även till ett nyradstecken och talet 125 i utbufferten,
     // och skriver sedan ut alltihopa i terminalen.
-    // int num = getText(buf, 12);
-    // printf("num <%d>", num);
-    char p = getChar();
-    printf("char <%c>", p);
-    printf("\n");
-    for (int i = 0; i < 70; i++){
-        p = getChar();
-        printf("char <%c>", p);
-        printf("\n");
+    int num = getText(buf, 12);
+    printf("num <%d>", num);
+    for (int i = 0; i < 12; i++){
+        printf("char <%c>", buf[i]);
     }
+    // char p = getChar();
+    // printf("char <%c>", p);
+    // printf("\n");
+    // for (int i = 0; i < 70; i++){
+    //     p = getChar();
+    //     printf("char <%c>", p);
+    //     printf("\n");
+    // }
     // printf("output %c",buf[0]);
     // putText(buf);
 //    putChar('\n');

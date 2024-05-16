@@ -9,7 +9,6 @@ buffer_out_pos: .byte   0           # Initialize buffer_out position to 0
     .global inImage
 inImage:
     leaq    buffer_in, %rdi         # Set buffer address
-    movb    $0, 63(%rdi)           # Set null at end
     movq    $64, %rsi               # Set count
     movq    stdin, %rdx             # Set file to stdin
     subq    $8, %rsp                # Stack alignment
@@ -17,7 +16,7 @@ inImage:
     addq    $8, %rsp                # Stack alignment
     movb    $0, buffer_in_pos       # Reset the buffer_in position
     leaq    buffer_in, %rdi         # Set buffer address
-    movb    $10, 63(%rdi)           # Set newline at end
+    movb    $0, 63(%rdi)            # Set null at end
     ret
 
     .global getInt
@@ -89,6 +88,7 @@ getInt_end:
     ret
 
 /*
+    getText:
     Överför n tecken från inbuffert till minnesplats.
     Parameter 1: minnesplats dit strängen kopieras (%rdi)
     Parameter 2: n, maximalt antal tecken att läsa (%rsi)
@@ -98,36 +98,57 @@ getInt_end:
 getText:
     movq    $0, %rax                # Set %rax to 0
     leaq    buffer_in, %rbx         # Load address of buffer_in
-    movq    buffer_in_pos, %rcx     # Load buffer_in position
+    movq    buffer_in_pos, %rcx     # Load buffer_in position value
     leaq    (%rbx, %rcx), %rdx      # Load adress for first char
     movb    (%rdx), %dl             # Load character from buffer
-    
-    // cmpq    $63, %rcx               # If buffer position is at the end
-    
-    // movb    %dl, (%rdi)
 
-    cmpb    $10, %dl                # Check that %dl is not newline
-    je      getCharRefill           # If buffer is empty 
-    addb    $1, buffer_in_pos       # Add 1 to buffer_in position
+    cmpb    $0, %dl                 # Check if char is null
+    je      getTextReturnOne        # If buffer is empty 
+    cmpb    $10, %dl                # Check if char is newline
+    je      getTextReturnOne        # If buffer is empty 
+    movb    %dl, (%rdi,%rcx)        # Write char to output
+
+getTextLoop:
+    addq    $1, %rax                # Add 1 to counter
+    addq    $1, %rcx                # Add 1 to fetch position
+    leaq    (%rbx, %rcx), %rdx      # Load adress for char
+    movb    (%rdx), %dl             # Load character from buffer
+
+    cmpq    %rsi, %rax              # End condition
+    je getTextReturn                # Return
+    cmpb    $0, %dl                 # Check if %dl is null
+    je getTextReturn                # Return
+    cmpb    $10, %dl                # Check if %dl is \n
+    je getTextReturn                # Return
+
+    movb    %dl, (%rdi,%rcx)        # Write char to output
+    jmp getTextLoop                 # Repeat
+
+getTextReturn:
     ret
 
-getTextRefill:
-    call    inImage                 # Call inImage
-    jmp     getChar                 # Jump back
+getTextReturnOne:
+    pushq   %rdi                    # Push %rdi
+    call    getChar                 # Refill buffer and get a char
+    popq    %rdi                    # Pop %rdi
+    movb    %al, (%rdi)             # Write char to output
+    movq    $1, %rax                # Set %rax to 1
+    ret
 
 /*
+    getChar:
     Returnerar ett tecken från inmatningsbuffertens aktuella position.
-    Retur: tecken (%rax)
+    Retur: char (%rax)
  */
     .global getChar
 getChar:
     leaq    buffer_in, %rbx         # Load address of buffer_in
     movq    buffer_in_pos, %rcx     # Load value buffer_in position
-    // cmpq    $63, %rcx               # If buffer position is at the end
-    // je      getCharRefill           # If buffer is at the end
     leaq    (%rbx, %rcx), %rdx      # Load adress for wanted char
     movb    (%rdx), %al             # Load character from buffer
     cmpb    $10, %al                # Check that %al is not newline
+    je      getCharRefill           # If buffer is empty 
+    cmpb    $0, %al                 # Check that %al is not null
     je      getCharRefill           # If buffer is empty 
     addb    $1, buffer_in_pos       # Add 1 to buffer_in position
     ret
