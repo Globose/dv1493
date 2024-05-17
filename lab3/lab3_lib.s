@@ -171,13 +171,17 @@ outImage:
     call    puts                    # Call puts(buf)
     addq    $8, %rsp                # Stack alignment
 
-    movb    $0, buffer_out_pos      # Reset the buffer_out position
+    movq    $0, buffer_out_pos      # Reset the buffer_out position
     ret
 
     .global putInt
 putInt:
     ret
 
+/* putText:
+    Lägger texten från buf [position] till utbuffert
+    Parameter: adress till buf (%rdi)
+ */
     .global putText
 putText:
     movq    %rdi, %rcx              # Load address of string
@@ -211,11 +215,11 @@ putChar:
 
 putChar_end:
     leaq    buffer_out, %rax        # Load address of buffer_out
-    movb    buffer_out_pos, %bl     # Load buffer_out position
+    movq    buffer_out_pos, %rbx    # Load buffer_out position
 
     movb    %cl, (%rax, %rbx, 1)    # Add the character to the buffer_out
-    incb    %bl                     # Increment the buffer_out position
-    movb    %bl, buffer_out_pos     # Save buffer_out position
+    incq    %rbx                    # Increment the buffer_out position
+    movq    %rbx, buffer_out_pos    # Save buffer_out position
     ret
 
 flush_buffer:

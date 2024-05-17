@@ -17,9 +17,9 @@ int main(){
     // Lägger inledande text i utmatningsbuffer, 
     // samt skickar innehåll från utmatningsbuffer till terminal.
     // Hämtar sedan text från terminalinmatning.
-    // putText(headMsg);   
-    // outImage();         
-    inImage();
+    putText(headMsg);
+    //outImage();
+    // inImage();
     // printf("Hellow C\n");
 
     // Loop som hämtar 5 tal från inmatningsbuffert, 
@@ -51,10 +51,7 @@ int main(){
     // Lägger även till ett nyradstecken och talet 125 i utbufferten,
     // och skriver sedan ut alltihopa i terminalen.
     int num = getText(buf, 12);
-    printf("num <%d>", num);
-    for (int i = 0; i < 12; i++){
-        printf("char <%c>", buf[i]);
-    }
+
     // char p = getChar();
     // printf("char <%c>", p);
     // printf("\n");
