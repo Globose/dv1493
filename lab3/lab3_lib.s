@@ -4,7 +4,7 @@ buffer_in_pos:  .byte   0           # Initialize buffer_in position to 0
 buffer_out:     .space  64          # Allocate 64 bytes for the buffer_out
 buffer_out_pos: .byte   0           # Initialize buffer_out position to 0
 
-    .text
+.text
     # Input
     .global inImage
 inImage:
@@ -15,8 +15,6 @@ inImage:
     call    fgets                   # Call fgets(buf, count, file)
     addq    $8, %rsp                # Stack alignment
     movb    $0, buffer_in_pos       # Reset the buffer_in position
-    leaq    buffer_in, %rdi         # Set buffer address
-    movb    $0, 63(%rdi)            # Set null at end
     ret
 
     .global getInt
@@ -98,13 +96,12 @@ getInt_end:
 getText:
     movq    $0, %rax                # Set %rax to 0
     leaq    buffer_in, %rbx         # Load address of buffer_in
-    movq    buffer_in_pos, %rcx     # Load buffer_in position value
+    movq    $0, %rcx                # Reset %rcx
+    movb    buffer_in_pos, %cl      # Load buffer_in position value
     leaq    (%rbx, %rcx), %rdx      # Load adress for first char
     movb    (%rdx), %dl             # Load character from buffer
 
     cmpb    $0, %dl                 # Check if char is null
-    je      getTextReturnOne        # If buffer is empty 
-    cmpb    $10, %dl                # Check if char is newline
     je      getTextReturnOne        # If buffer is empty 
     movb    %dl, (%rdi,%rcx)        # Write char to output
 
@@ -117,8 +114,6 @@ getTextLoop:
     cmpq    %rsi, %rax              # End condition
     je getTextReturn                # Return
     cmpb    $0, %dl                 # Check if %dl is null
-    je getTextReturn                # Return
-    cmpb    $10, %dl                # Check if %dl is \n
     je getTextReturn                # Return
 
     movb    %dl, (%rdi,%rcx)        # Write char to output
@@ -142,13 +137,13 @@ getTextReturnOne:
  */
     .global getChar
 getChar:
+    call    inImage                 # Call inImage
     leaq    buffer_in, %rbx         # Load address of buffer_in
-    movq    buffer_in_pos, %rcx     # Load value buffer_in position
+    movq    $0, %rcx                # Reset %rcx
+    movb    buffer_in_pos, %cl      # Load value buffer_in position
     leaq    (%rbx, %rcx), %rdx      # Load adress for wanted char
     movb    (%rdx), %al             # Load character from buffer
-    cmpb    $10, %al                # Check that %al is not newline
-    je      getCharRefill           # If buffer is empty 
-    cmpb    $0, %al                 # Check that %al is not null
+    cmpb    $0, %al                 # Check if %al is null
     je      getCharRefill           # If buffer is empty 
     addb    $1, buffer_in_pos       # Add 1 to buffer_in position
     ret
@@ -206,26 +201,29 @@ putText_loop:
 putText_end:
     ret
 
+/*
+    putChar
+    Lägger till char c i utbufferten
+    Parameter: c (%rdi)
+ */
     .global putChar
 putChar:
-    # Check if buffer_out is full
-    cmpb    $63, buffer_out_pos
-    movb    %dil, %cl
+    cmpb    $63, buffer_out_pos     # Check if buffer_out is full
     jge     flush_buffer
 
 putChar_end:
     leaq    buffer_out, %rax        # Load address of buffer_out
-    movq    buffer_out_pos, %rbx    # Load buffer_out position
-
-    movb    %cl, (%rax, %rbx, 1)    # Add the character to the buffer_out
-    incq    %rbx                    # Increment the buffer_out position
-    movq    %rbx, buffer_out_pos    # Save buffer_out position
+    movq    $0, %rbx                # Reset %rbx
+    movb    buffer_out_pos, %bl     # Load buffer_out position
+    movb    %dil, (%rax, %rbx, 1)   # Add the character to the buffer_out
+    incb    %bl                     # Increment the buffer_out position
+    movb    %bl, buffer_out_pos     # Save buffer_out position
     ret
 
 flush_buffer:
-    pushq   %rcx
+    pushq   %rdi
     call    outImage                # Call outImage to print the buffer
-    popq    %rcx
+    popq    %rdi
     jmp     putChar_end             # Jump back to the end of putChar
 
     .global getOutPos

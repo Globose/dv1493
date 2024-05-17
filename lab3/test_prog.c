@@ -17,8 +17,11 @@ int main(){
     // Lägger inledande text i utmatningsbuffer, 
     // samt skickar innehåll från utmatningsbuffer till terminal.
     // Hämtar sedan text från terminalinmatning.
-    putText(headMsg);
-    //outImage();
+    // inImage();
+    // putText(headMsg);
+    // putChar('a');
+    // outImage();
+    // inImage();
     // inImage();
     // printf("Hellow C\n");
 
@@ -50,7 +53,8 @@ int main(){
     // och lägger de lästa tecknen i utbufferten.
     // Lägger även till ett nyradstecken och talet 125 i utbufferten,
     // och skriver sedan ut alltihopa i terminalen.
-    int num = getText(buf, 12);
+    // int num = getText(buf, 12);
+    char c = getChar();
 
     // char p = getChar();
     // printf("char <%c>", p);
