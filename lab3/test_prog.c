@@ -54,8 +54,9 @@ int main(){
     // Lägger även till ett nyradstecken och talet 125 i utbufferten,
     // och skriver sedan ut alltihopa i terminalen.
     // int num = getText(buf, 12);
+    // inImage();
     char c = getChar();
-
+    printf("char <%c>", c);
     // char p = getChar();
     // printf("char <%c>", p);
     // printf("\n");

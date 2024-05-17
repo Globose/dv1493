@@ -5,15 +5,28 @@ buffer_out:     .space  64          # Allocate 64 bytes for the buffer_out
 buffer_out_pos: .byte   0           # Initialize buffer_out position to 0
 
 .text
-    # Input
+
+/*
+    inImage:
+    Läser en textrad från stdin till inmatningsbuffert
+ */
     .global inImage
 inImage:
     leaq    buffer_in, %rdi         # Set buffer address
     movq    $64, %rsi               # Set count
     movq    stdin, %rdx             # Set file to stdin
-    subq    $8, %rsp                # Stack alignment
+
+    # Stack alignment
+    mov     %rsp, %rax              # Move %rsp to %rax
+    and     $0xF, %rax              # Mask with 0xF to get lower 4 bits
+    subq    %rax, %rsp              # Align it to 16-byte
+    pushq   %rax                    # Push aligner
+    pushq   $0                      # Space push
+
     call    fgets                   # Call fgets(buf, count, file)
-    addq    $8, %rsp                # Stack alignment
+    pop     %rax                    # Pop space
+    pop     %rax                    # Pop aligner
+    addq    %rax, %rsp              # Reset stack
     movb    $0, buffer_in_pos       # Reset the buffer_in position
     ret
 
@@ -137,14 +150,13 @@ getTextReturnOne:
  */
     .global getChar
 getChar:
-    call    inImage                 # Call inImage
     leaq    buffer_in, %rbx         # Load address of buffer_in
     movq    $0, %rcx                # Reset %rcx
     movb    buffer_in_pos, %cl      # Load value buffer_in position
     leaq    (%rbx, %rcx), %rdx      # Load adress for wanted char
     movb    (%rdx), %al             # Load character from buffer
     cmpb    $0, %al                 # Check if %al is null
-    je      getCharRefill           # If buffer is empty 
+    je      getCharRefill           # If buffer is empty
     addb    $1, buffer_in_pos       # Add 1 to buffer_in position
     ret
 
