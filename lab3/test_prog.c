@@ -13,14 +13,14 @@ int main(){
     long long temp;
     unsigned int pos, count;
 
-    // Lägger inledande text i utmatningsbuffer, 
+    // Lägger inledande text i utmatningsbuffer,
     // samt skickar innehåll från utmatningsbuffer till terminal.
     // Hämtar sedan text från terminalinmatning.
     putText(headMsg);
     outImage();
     inImage();
 
-    // Loop som hämtar 5 tal från inmatningsbuffert, 
+    // Loop som hämtar 5 tal från inmatningsbuffert,
     // samt placerar uträkning med dessa tal att presentera i utmatningsbufferten.
     // Talen summeras också i variabeln sum.
     for (count=5; count>0; count-- ){
