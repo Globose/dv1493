@@ -3,7 +3,6 @@
 *************************************************************/
 
 #include "my_iolib.h"
-#include <stdio.h>
 
 
 int main(){
@@ -17,64 +16,48 @@ int main(){
     // Lägger inledande text i utmatningsbuffer, 
     // samt skickar innehåll från utmatningsbuffer till terminal.
     // Hämtar sedan text från terminalinmatning.
-    // inImage();
-    // putText(headMsg);
-    // putChar('a');
-    // outImage();
-    // inImage();
-    // inImage();
-    // printf("Hellow C\n");
+    putText(headMsg);
+    outImage();
+    inImage();
 
     // Loop som hämtar 5 tal från inmatningsbuffert, 
     // samt placerar uträkning med dessa tal att presentera i utmatningsbufferten.
     // Talen summeras också i variabeln sum.
-    // for (count=5; count>0; count-- ){
-    //     temp = getInt();
-    //     if (temp < 0){
-    //         pos = getOutPos();
-    //         pos--;
-    //         setOutPos(pos);
-    //     }
-    //     sum += temp;
-    //     // putInt(temp);
-    //     // putChar('+');
-    // }
-    // pos = getOutPos();
-    // pos--;
-    // setOutPos(pos);
+    for (count=5; count>0; count-- ){
+        temp = getInt();
+        if (temp < 0){
+            pos = getOutPos();
+            pos--;
+            setOutPos(pos);
+        }
+        sum += temp;
+        putInt(temp);
+        putChar('+');
+    }
+    pos = getOutPos();
+    pos--;
+    setOutPos(pos);
 
     // Lägger till summan i uträkningen i utbufferten,
     // och skriver uträkningen till terminalskärmen.
-    // putChar('=');
-    // putInt(sum);
-    // outImage();
+    putChar('=');
+    putInt(sum);
+    outImage();
 
     // Försöker läsa ytterligare 12 tecken från inbufferten,
     // och lägger de lästa tecknen i utbufferten.
     // Lägger även till ett nyradstecken och talet 125 i utbufferten,
     // och skriver sedan ut alltihopa i terminalen.
-    // int num = getText(buf, 12);
-    // inImage();
-    char c = getChar();
-    printf("char <%c>", c);
-    // char p = getChar();
-    // printf("char <%c>", p);
-    // printf("\n");
-    // for (int i = 0; i < 70; i++){
-    //     p = getChar();
-    //     printf("char <%c>", p);
-    //     printf("\n");
-    // }
-    // printf("output %c",buf[0]);
-    // putText(buf);
+    getText(buf, 12);
+    putText(buf);
 //    putChar('\n');
-    // putInt(125);    
-    // outImage(); 
+    putInt(125);
+    outImage();
 
     // Lägger till sist avslutningstext i utmatningsbufferten,
     // och visar texten i terminalen.
-    // putText(endMsg); 
-    // outImage();  
+    putText(endMsg);
+    outImage();
 
     return 0;
 }

@@ -28,8 +28,27 @@ inImage:
     pop     %rax                    # Pop aligner
     addq    %rax, %rsp              # Reset stack
     movb    $0, buffer_in_pos       # Reset the buffer_in position
+
+    leaq    buffer_in, %rdi         # Set buffer address
+    movq    $0, %rax                # Set %rax to 0
+    movq    $0, %rdx                # Set %rdx to 0
+
+inImageRemoveNewLine:
+    movb    (%rdi, %rax, 1), %dl    # Load character from buffer
+    cmpb    $10, %dl                # Compare to newline
+    je      inImageExit             # Stop if newline
+    addq    $1, %rax                # Go to next position
+    jmp inImageRemoveNewLine
+
+inImageExit:
+    movb    $0, (%rdi)
     ret
 
+
+/* getInt:
+    Returnerar ett tal från inbuffer
+    Retur: tal (%rax)
+ */
     .global getInt
 getInt:
     xorq    %rax, %rax              # Set int to 0
@@ -38,6 +57,11 @@ getInt:
     xorq    %rdx, %rdx              # Reset %rdx
     movb    buffer_in_pos, %cl      # Load buffer_in position
     movb    (%rbx, %rcx, 1), %dl    # Load character from buffer
+
+    # Null check
+    cmpb    $0, %dl                 # Check if buffer is empty
+    je      getInt_fillbuffer       # Fill buffer
+
     xorb    %r8b, %r8b              # Set isNegative to false
     cmpb    $48, %dl                # Compare the character to 0 in ascii
     jge     getInt_loop             # Int has no prefix, start loop
@@ -71,6 +95,10 @@ getInt_checkBounds:
     cmpb    $63, %cl                # Check if buffer_in position is out of bounds
     jge     getInt_refreshBuffer    # Call inImage if it is
     ret
+
+getInt_fillbuffer:
+    call inImage                    # Fill buffer
+    jmp getInt                      # Start over
 
 getInt_refreshBuffer:
     call    inImage                 # Refresh buffer_in
@@ -164,11 +192,38 @@ getCharRefill:
     call    inImage                 # Call inImage
     jmp     getChar                 # Jump back
 
-// getInPos:
-//     ret
 
-// setInPos:
-//     ret
+/* getInPos:
+    Returnerar aktuellt buffertposition för inbuffert
+    Retur: index (%rax)
+ */
+    .global getInPos
+getInPos:
+    movq    buffer_in_pos, %rax     # Load buffer_in position value
+    ret
+
+/* setInPos:
+    Sätter ett värde på aktuell inbuffertposition
+    Parameter: position (%rdi)
+ */
+    .global setInPos
+setInPos:
+    cmpq    $0, %rdi                # Compare to 0
+    jl      setInPosZero            # If less than 0
+    cmpq    $63, %rdi               # Compare to 63
+    jg      setInPosMax             # If greater than 63
+    movb    %dil, buffer_in_pos     # Reset the buffer_in position
+    ret
+
+setInPosZero:
+    movb    $0, buffer_in_pos      # Set buffer_in position to 0
+    ret
+
+setInPosMax:
+    movb    $63, buffer_in_pos      # Set buffer_in position to 63
+    ret
+
+
 
     # Output
     .global outImage
@@ -181,12 +236,18 @@ outImage:
     movq    $0, buffer_out_pos      # Reset the buffer_out position
     ret
 
+
+/* putInt:
+    Lägger till ett tal n som sträng i utbufferten
+    Parameter: tal n (%rdi)
+ */
     .global putInt
 putInt:
+    //jmp     putChar
     ret
 
 /* putText:
-    Lägger texten från buf [position] till utbuffert
+    Lägger texten från buf till utbuffert
     Parameter: adress till buf (%rdi)
  */
     .global putText
@@ -228,6 +289,9 @@ putChar_end:
     movq    $0, %rbx                # Reset %rbx
     movb    buffer_out_pos, %bl     # Load buffer_out position
     movb    %dil, (%rax, %rbx, 1)   # Add the character to the buffer_out
+    addq    $1, %rbx                # Add 1 to %rbx
+    movb    $0, (%rax, %rbx, 1)     # Add null character to next pos
+    subq    $1, %rbx                # Sub 1 from %rbx
     incb    %bl                     # Increment the buffer_out position
     movb    %bl, buffer_out_pos     # Save buffer_out position
     ret
