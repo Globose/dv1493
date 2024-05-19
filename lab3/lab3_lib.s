@@ -130,9 +130,9 @@ getText:
     movb    (%rbx, %rcx), %dl       # Load character from buffer
 
     cmpb    $0, %dl                 # Check if char is null
-    je      getTextReturnOne        # If buffer is empty
+    je      getTextFillBuffer       # If buffer is empty
     cmpb    $10, %dl                # Check if char is newline
-    je      getTextReturnOne        # If buffer is newline
+    je      getTextFillBuffer       # If buffer is newline
     movb    %dl, (%rdi,%rax)        # Write char to output
 
 getTextLoop:
@@ -153,15 +153,11 @@ getTextReturn:
     movb    $0, (%rdi,%rax)         # Null to end
     ret
 
-getTextReturnOne:
+getTextFillBuffer:
     pushq   %rdi                    # Push %rdi
-    call    getChar                 # Refill buffer and get a char
+    call    inImage                 # Call inImage
     popq    %rdi                    # Pop %rdi
-    movb    %al, (%rdi)             # Write char to output
-    movq    $1, %rax                # Set %rax to 1
-    addq    %rax, buffer_in_pos     # Add to buffer_in pos
-    movb    $0, (%rdi,%rax)         # Null to end
-    ret
+    jmp     getText                 # Go back
 
 /*
     getChar:
